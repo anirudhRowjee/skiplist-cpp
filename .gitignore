@@ -1,0 +1,8 @@
+# C/C++ build outputs
+.build/
+build/
+.cache
+bins
+gens
+libs
+objs
