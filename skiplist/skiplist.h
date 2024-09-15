@@ -1,10 +1,23 @@
-// Skiplist header file
+#include <string>
+#include <vector>
+
+class SkiplistNode {
+private:
+  int current_level;
+  std::string key;
+  std::string value;
+  std::vector<SkiplistNode *> next;
+};
 
 class Skiplist {
+
 public:
-  void set_a(int new_a) { a = new_a; }
-  int get_a() { return a; }
+  // constructor
+  Skiplist(int max_level) { current_max_level = max_level; }
 
 private:
-  int a;
+  SkiplistNode *START;
+  SkiplistNode *END;
+  int max_level;
+  int current_max_level;
 };
