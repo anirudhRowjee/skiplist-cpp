@@ -1,3 +1,5 @@
+#include "sl/common.h"
+
 #include <optional>
 #include <string>
 #include <vector>
@@ -39,17 +41,21 @@ public:
   Skiplist(int max_level);
 
   // Get the value associated with a particular key
-  [[nodiscard]] std::optional<std::string> Search(std::string Key);
+  std::optional<std::string> Search(std::string Key);
 
   // Insert a key-value pair
-  std::optional<std::string> Insert(std::string key, std::string value);
+  std::pair<std::string, SkiplistError> Insert(const std::string &Key,
+                                               const std::string &Value);
 
   // Delete a key and get the value associated with it on successful delete
-  std::optional<std::string> Delete(std::string key);
+  std::pair<std::string, SkiplistError> Delete(std::string Key);
 
   // Do a full scan of the skiplist
   // TODO see if we can replace this with an iterator
-  std::optional<std::vector<std::pair<std::string, std::string>>> Scan();
+  std::pair<std::vector<std::pair<std::string, std::string>>, SkiplistError>
+  Scan();
+
+  ~Skiplist();
 
   SkiplistNode *START;
   SkiplistNode *END;
