@@ -1,14 +1,11 @@
 #include "sl/common.h"
 
 #include <optional>
+#include <random>
 #include <string>
 #include <vector>
 
 class SkiplistNode {
-private:
-  int current_level;
-  std::string key;
-  std::string value;
 
 public:
   // TODO see if we can mutate this without making it public
@@ -24,14 +21,14 @@ public:
     for (int i = current_level - 1; i >= 0; i--) {
       next[i] = nullptr;
     }
-
-    // TODO
-    // - Decide the level of this node with a randomized coin toss series
-    // - make all the pointers in the next array null
   }
 
   // Function to remove all references in the `next` array.
   void EmptyNext();
+
+  int current_level;
+  std::string key;
+  std::string value;
 };
 
 class Skiplist {
@@ -61,4 +58,10 @@ public:
   SkiplistNode *END;
   int max_level;
   int current_max_level;
+  // p: a tunable factor for the number of elements you want in the skiplist
+  float p;
+  std::mt19937 rng;
+  std::uniform_real_distribution<double> distribution;
+
+  int getRandomLevel();
 };

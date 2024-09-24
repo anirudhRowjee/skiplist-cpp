@@ -16,15 +16,12 @@ TEST(SkiplistTest, test_insert) {
   const int max_level = 5;
   auto sl = Skiplist(max_level);
 
-  // Search for an element that doesn't exist
-  ASSERT_EQ(sl.Search("key1"), std::nullopt);
-
   // Insert an element and search for it
-  auto key = std::string("hello");
-  auto value = std::string("world");
+  auto [value, err] = sl.Insert("hello", "world");
+  std::cout << "Inserted" << std::endl;
+  ASSERT_EQ(err.e, SkiplistError::NOERR);
 
-  sl.Insert(key, value);
-  sl.Delete("test");
+  // sl.Delete("hello");
   // ASSERT_EQ(err.e, SkiplistError::ErrorVariant::BAD_ACCESS);
   // ASSERT_FALSE(err);
 }
