@@ -1,5 +1,8 @@
 #include "sl/common.h"
 
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <iostream>
 #include <optional>
 #include <random>
 #include <string>
@@ -10,16 +13,27 @@ class SkiplistNode {
 public:
   // TODO see if we can mutate this without making it public
   // Maybe operator overload??
-  std::vector<SkiplistNode *> next;
+  std::vector<SkiplistNode *> links;
 
   // Constructor
   SkiplistNode(int current_level, std::string key, std::string value)
       : current_level(current_level), key(std::move(key)),
         value(std::move(value)) {
 
-    next = std::vector<SkiplistNode *>(current_level);
+    links = std::vector<SkiplistNode *>(current_level);
     for (int i = current_level - 1; i >= 0; i--) {
-      next[i] = nullptr;
+      links[i] = nullptr;
+    }
+  }
+
+  void DUMP() {
+    std::cout << fmt::format("SkiplistNode[{}] [{}:{}] AT {} ", current_level,
+                             key, value, fmt::ptr(this))
+              << std::endl;
+    for (int i = current_level - 1; i >= 0; i--) {
+      std::cout << fmt::format("\tNode at level {} pointing to {}", i,
+                               fmt::ptr(links[i]))
+                << std::endl;
     }
   }
 
@@ -51,6 +65,13 @@ public:
   // TODO see if we can replace this with an iterator
   std::pair<std::vector<std::pair<std::string, std::string>>, SkiplistError>
   Scan();
+
+  // Find the point to insert a new skiplist node
+  std::pair<std::pair<SkiplistNode *, std::vector<SkiplistNode *>>,
+            SkiplistError>
+  identifyInsertionPoint(std::string key);
+
+  void DUMP();
 
   ~Skiplist();
 
