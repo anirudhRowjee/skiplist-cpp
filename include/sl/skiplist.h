@@ -37,9 +37,6 @@ public:
     }
   }
 
-  // Function to remove all references in the `next` array.
-  void EmptyNext();
-
   int current_level;
   std::string key;
   std::string value;
@@ -69,7 +66,7 @@ public:
   // Find the point to insert a new skiplist node
   std::pair<std::pair<SkiplistNode *, std::vector<SkiplistNode *>>,
             SkiplistError>
-  identifyInsertionPoint(std::string key);
+  identifyPredecessorNode(std::string key);
 
   void DUMP();
 

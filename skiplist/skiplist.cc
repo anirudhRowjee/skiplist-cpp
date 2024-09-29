@@ -27,14 +27,16 @@ Skiplist::Skiplist(int max_level) : max_level(max_level) {
 
 std::optional<std::string> Skiplist::Search(std::string Key) {
 
+  std::cout << "Searching for -> " << Key << std::endl;
   auto current = START;
   auto max_search_level = max_level - 1;
 
   for (int i = max_search_level; i >= 0; i--) {
     while (current->links[i]->key < Key && current->links[i] != END) {
+      std::cout << fmt::format("Exploring key -> {}", current->links[i]->key)
+                << std::endl;
       current = current->links[i];
     }
-    std::cout << fmt::format("Finished Exploring level {}", i) << std::endl;
   }
   current = current->links[0];
   if (current->key == Key) {
@@ -45,7 +47,7 @@ std::optional<std::string> Skiplist::Search(std::string Key) {
 }
 
 std::pair<std::pair<SkiplistNode *, std::vector<SkiplistNode *>>, SkiplistError>
-Skiplist::identifyInsertionPoint(std::string key) {
+Skiplist::identifyPredecessorNode(std::string key) {
 
   // Initialize the update vector
   auto update = std::vector<SkiplistNode *>(max_level, nullptr);
@@ -56,9 +58,6 @@ Skiplist::identifyInsertionPoint(std::string key) {
 
   auto max_search_level = max_level - 1;
   for (int i = max_search_level; i >= 0; i--) {
-    // this segfaults here because in the null case, current->next[i] is a
-    // nullptr
-
     // Check if the next node in the level has a key that comes before our
     // search key
 
@@ -79,13 +78,15 @@ Skiplist::identifyInsertionPoint(std::string key) {
 std::pair<std::string, SkiplistError>
 Skiplist::Insert(const std::string &key, const std::string &value) {
 
-  auto [meta, error] = identifyInsertionPoint(key);
+  // Figure out where to insert the node: this is either the node with the same
+  // key, so we can update the value, or we found the node right before the
+  // insertion point so that we can insert after it
+  auto [meta, error] = identifyPredecessorNode(key);
   if (error.e != SkiplistError::NOERR) {
     return std::make_pair("", error);
   }
 
   auto [current_node, update] = meta;
-
   if (current_node->key == key) {
 
     // If the key exists at the current node, update its value
@@ -122,6 +123,21 @@ Skiplist::Insert(const std::string &key, const std::string &value) {
 }
 
 std::pair<std::string, SkiplistError> Skiplist::Delete(std::string Key) {
+
+  // Figure out where to delete the node: this is either the node with the same
+  // key, so we can update the value, or we found the node right before the
+  // insertion point so that we can insert after it
+  auto [meta, error] = identifyPredecessorNode(Key);
+  if (error.e != SkiplistError::NOERR) {
+    return std::make_pair("", error);
+  }
+  auto [nodeptr, update] = meta;
+  if (nodeptr->key != Key) {
+    return std::make_pair(
+        "", SkiplistError(SkiplistError::ErrorVariant::KEY_NOT_FOUND));
+  } else {
+  }
+
   return std::make_pair("",
                         SkiplistError(SkiplistError::ErrorVariant::BAD_ACCESS));
 }

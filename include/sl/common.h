@@ -8,7 +8,7 @@
 class SkiplistError {
 
 public:
-  enum ErrorVariant { BAD_ACCESS, ALLOC_FAIL, NOERR };
+  enum ErrorVariant { BAD_ACCESS, ALLOC_FAIL, KEY_NOT_FOUND, NOERR };
   ErrorVariant e = ErrorVariant::NOERR;
   std::string message;
 
