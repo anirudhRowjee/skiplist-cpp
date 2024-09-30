@@ -5,6 +5,7 @@
 #include <iostream>
 #include <optional>
 #include <random>
+#include <utility>
 
 Skiplist::Skiplist(int max_level) : max_level(max_level) {
 
@@ -85,6 +86,7 @@ Skiplist::Insert(const std::string &key, const std::string &value) {
   if (error.e != SkiplistError::NOERR) {
     return std::make_pair("", error);
   }
+  std::cout << "Predecessor Found!" << std::endl;
 
   auto [current_node, update] = meta;
   if (current_node->key == key) {
@@ -124,6 +126,7 @@ Skiplist::Insert(const std::string &key, const std::string &value) {
 
 std::pair<std::string, SkiplistError> Skiplist::Delete(std::string Key) {
 
+  std::string oldVal;
   // Figure out where to delete the node: this is either the node with the same
   // key, so we can update the value, or we found the node right before the
   // insertion point so that we can insert after it
@@ -131,21 +134,53 @@ std::pair<std::string, SkiplistError> Skiplist::Delete(std::string Key) {
   if (error.e != SkiplistError::NOERR) {
     return std::make_pair("", error);
   }
-  auto [nodeptr, update] = meta;
-  if (nodeptr->key != Key) {
+  auto [nodePtr, update] = meta;
+  if (nodePtr->key == Key) {
+    // We have found the right node to delete
+    // update all the necessary pointers
+    for (int i = 0; i < max_level; i++) {
+      if (update[i]->links[i] != nodePtr) {
+        break;
+      }
+      update[i]->links[i] = nodePtr->links[i];
+    }
+    oldVal = nodePtr->value;
+    delete nodePtr;
+    // TODO update overall list level
+    return std::make_pair(oldVal,
+                          SkiplistError(SkiplistError::ErrorVariant::NOERR));
+  } else {
     return std::make_pair(
         "", SkiplistError(SkiplistError::ErrorVariant::KEY_NOT_FOUND));
-  } else {
   }
 
   return std::make_pair("",
                         SkiplistError(SkiplistError::ErrorVariant::BAD_ACCESS));
 }
 
+std::pair<std::vector<std::pair<std::string, std::string>>, SkiplistError>
+Skiplist::Scan() {
+  std::vector<std::pair<std::string, std::string>> answer = {};
+  auto current_node = START->links[0];
+  while (current_node != END) {
+    answer.push_back(std::make_pair(current_node->key, current_node->value));
+    current_node = current_node->links[0];
+  }
+  return std::make_pair(answer, SkiplistError(SkiplistError::NOERR));
+}
+
 Skiplist::~Skiplist() {
-  // Get all keys via range scan
-  // Delete all keys one by one to avoid reference counting hell
-  // std::cout << "Destructing Skiplist" << std::endl;
+  std::cout << "Destructing Skiplist" << std::endl;
+  auto [res, err] = Scan();
+  if (err.e != SkiplistError::NOERR) {
+  } else {
+    for (auto [k, _] : res) {
+      auto [res1, err1] = Delete(k);
+      if (err1.e != SkiplistError::NOERR) {
+        std::cout << fmt::format("Failed to delete key {}", res1) << std::endl;
+      }
+    }
+  }
 }
 
 void Skiplist::DUMP() {
